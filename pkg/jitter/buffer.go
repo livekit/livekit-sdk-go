@@ -77,7 +77,6 @@ func (b *Buffer) UpdateMaxLatency(maxLatency time.Duration) {
 func (b *Buffer) Push(pkt *rtp.Packet) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-
 	b.packetsTotal++
 	var start, end, padding bool
 	if len(pkt.Payload) == 0 {
@@ -117,6 +116,9 @@ func (b *Buffer) Push(pkt *rtp.Packet) {
 			b.prevSN = pkt.SequenceNumber - 1
 			b.minTS = pkt.Timestamp - b.maxLate
 			p.reset = true
+		} else {
+			// drop the buffer
+			return
 		}
 	} else if beforePrev && !outsidePrevRange {
 		// drop if packet comes before previously pushed packet
